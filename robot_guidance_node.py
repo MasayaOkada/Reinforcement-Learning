@@ -10,6 +10,7 @@ from cv_bridge import CvBridge, CvBridgeError
 from reinforcement_learning import *
 from skimage.transform import resize
 from std_msgs.msg import Float32, Int8
+from std_srvs.srv import Empty
 import sys
 import skimage.transform
 import csv
@@ -54,16 +55,15 @@ class robot_guidance_node:
 		cv2.circle(temp, (640 / 2, 480 / 2),  100, (0, 0, 255), 2)
 		cv2.imshow("Capture Image", temp)
 		cv2.waitKey(1)
-		ros_time = str(rospy.Time.now())
-		self.reward = ros_time		
 
-		self.reward_pub.publish(self.reward)
+		if sim_time 
+
 		
 	def callback_bumper(self, bumper)
 		self.action = self.rl.stop_episode_and_train(imgobj, self.reward, self.done)
-		self.start_time = time.strftime("%Y%m%d_%H:%M:%S")
-		
-		
+		rospy.wait_for_service('/gazebo/reset_world')
+		reset_world = rospy.ServiceProxy('/gazebo/reset_world',Empty)
+
 	def callback_reward(self, reward):
 		self.reward = reward.data
 		img = resize(self.cv_image, (48, 64), mode='constant')
