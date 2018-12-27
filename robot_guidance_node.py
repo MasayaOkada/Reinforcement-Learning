@@ -56,7 +56,7 @@ class robot_guidance_node:
 		cv2.imshow("Capture Image", temp)
 		cv2.waitKey(1)
 
-		if sim_time 
+	 
 
 		
 	def callback_bumper(self, bumper)
