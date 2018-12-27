@@ -21,12 +21,12 @@ class robot_move:
 		self.action = data.data
 
 		# [velocity (m/s), angular velocity(rad/s)]
-		velocity = [[linear_vel, 0.1], [linear_vel, -0.1], [linear_vel, angle_vel], [linear_vel, -angle_vel]]
+		velocity = [[linear_vel, 0.0], [linear_vel, angle_vel], [linear_vel, -angle_vel]]
 		self.vel_msg.linear.x = velocity[self.action][0]
 		self.vel_msg.angular.z = velocity[self.action][1]
 		print 'velocity = ', self.vel_msg
 
-		move = ['FR', 'FL', 'R', 'L']
+		move = ['F', 'R', 'L']
 		print 'action = ', move[self.action]
 
 		#Publish the velocity
