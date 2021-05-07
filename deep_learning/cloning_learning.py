@@ -3,6 +3,11 @@ import chainer.functions as F
 import chainer.links as L
 import numpy as np
 import csv
+import datatime
+
+# HYPER PARAM
+BATCH_SIZE = 5
+MAX_DATA = 10000
 
 class Net(chainer.Chain):
 	def __init__(self, n_history=3, n_action=3):
@@ -13,13 +18,10 @@ class Net(chainer.Chain):
 			conv3=L.Convolution2D(64, 64, ksize=3, stride=1, nobias=False, initialW=initializer),
 			fc4=L.Linear(960, 512, initialW=initializer),
 			fc5=L.Linear(512, 256, initialW=initializer),
-			lstm6 = L.LSTM(256,256),
+			lstm6 = L.LSTM(256, 256),
 			fc7=L.Linear(256,128),
 			fc8=L.Linear(128, n_action, initialW=np.zeros((n_action, 128), dtype=np.float32))
 		)
-
-	def reset_state(self):
-        self.lstm.reset_state()
 
 	def __call__(self, x, test=False):
 		s = chainer.Variable(x)
@@ -34,12 +36,7 @@ class Net(chainer.Chain):
 		return h
 
 class cloning_learning:
-	def __init__(self, n_channel=3, n_action=1, seq_len=10, support_len=10, repeat=True, pred=1)):
-		self.seq_length = seq_len
-        self.support_len = support_len
-		self.pred = pred
-        self.batch_size = batch_size
-        self.repeat = repeat
+	def __init__(self, n_channel=3, n_action=1):
 		self.net = Net(n_channel, n_action)
 		self.optimizer = chainer.optimizers.Adam(eps=1e-2)
 		self.optimizer.setup(self.net)
@@ -55,6 +52,7 @@ class cloning_learning:
 		self.data = []
 		self.target_angles = []
 
+
 	def act_and_trains(self, imgobj, target_angle):		
 		x = [self.phi(s) for s in [imgobj]]
 		t = np.array([target_angle], np.float32)
@@ -64,9 +62,10 @@ class cloning_learning:
 			del self.data[0]
 			del self.target_angles[0]
 		dataset = TupleDataset(self.data, self.target_angles)
-		train_iter = SerialIterator(dataset, batch_size = BATCH_SIZE, repeat=True, shuffle=True)
+		train_iter = SerialIterator(dataset, batch_size = BATCH_SIZE, repeat=True, shuffle=False)
 		train_batch  = train_iter.next()
 		x_train, t_train = chainer.dataset.concat_examples(train_batch, -1)
+		st = datetime.datetime.now()
 
 		y_train = self.net(x_train)
 		loss_train = F.mean_squared_error(y_train, Variable(t_train.reshape(BATCH_SIZE, 1)))
@@ -75,6 +74,7 @@ class cloning_learning:
 
 		self.net.cleargrads()
 		loss_train.backward()
+		loss_train.unchain_backward()
 		self.optimizer.update()
 			
 		self.count += 1
